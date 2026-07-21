@@ -1,3 +1,5 @@
+import { config } from "../config.js";
+
 export function notFoundHandler(_req, res) {
   res.status(404).json({
     error: "Not Found",
@@ -14,7 +16,7 @@ export function errorHandler(err, _req, res, _next) {
     message: err.message || "Erreur interne du serveur",
   };
 
-  if (process.env.NODE_ENV !== "production" && err.stack) {
+  if (config.env !== "production" && err.stack) {
     payload.stack = err.stack;
   }
 

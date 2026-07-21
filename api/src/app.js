@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import path from "node:path";
 import { config } from "./config.js";
 import apiRouter from "./routes/index.js";
 import authRouter from "./routes/auth.js";
@@ -12,32 +11,31 @@ import evenementsRouter from "./routes/evenements.js";
 import { requireAuth } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
-export function createApp() {
-  const app = express();
+const routes = config.routes;
 
-  app.use(
+/**
+ * Routeur API uniquement (à monter sur `config.basePath` par le serveur hôte).
+ */
+export function createApiRouter() {
+  const router = express.Router();
+
+  router.use(
     cors({
       origin: config.corsOrigin === "*" ? true : config.corsOrigin,
     })
   );
-  app.use(express.json());
+  router.use(express.json());
 
-  app.use("/api", apiRouter);
-  app.use("/api/auth", authRouter);
-  app.use("/api/roles", rolesRouter);
-  app.use("/api/ruches", ruchesRouter);
-  app.use("/api/outils", outilsRouter);
-  app.use("/api/adherents", requireAuth, adherentsRouter);
-  app.use("/api/evenements", requireAuth, evenementsRouter);
+  router.use(routes.root || "/", apiRouter);
+  router.use(routes.auth || "/auth", authRouter);
+  router.use(routes.roles || "/roles", rolesRouter);
+  router.use(routes.ruches || "/ruches", ruchesRouter);
+  router.use(routes.outils || "/outils", outilsRouter);
+  router.use(routes.adherents || "/adherents", requireAuth, adherentsRouter);
+  router.use(routes.evenements || "/evenements", requireAuth, evenementsRouter);
 
-  app.use(express.static(config.appDir));
+  router.use(notFoundHandler);
+  router.use(errorHandler);
 
-  app.get("/", (_req, res) => {
-    res.sendFile(path.join(config.appDir, "index.html"));
-  });
-
-  app.use(notFoundHandler);
-  app.use(errorHandler);
-
-  return app;
+  return router;
 }

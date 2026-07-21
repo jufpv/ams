@@ -14,8 +14,18 @@ Toujours privilégier la cohérence avec le code existant plutôt qu’introduir
 ## Lancer l’app en local
 
 ```bash
-cd api && npm install && npm run db:migrate && npm run db:seed && npm run dev
+npm install
+cp settings.private.example.json settings.private.json
+npm run db:migrate && npm run db:seed
+npm start
+# ou watch : npm run dev
 ```
+
+- **`Server.js`** : serveur HTTP (static `app/` + montage API)
+- **`settings.json` / `settings.private.json`** : configuration (plus de fichiers `.env`)
+- **`api/`** : API uniquement (routes, services, middleware, SQLite)
+
+Prod : `pm2 start ecosystem.config.cjs`.
 
 URL : `http://127.0.0.1:3001`
 
@@ -57,11 +67,14 @@ Constante source de vérité : `api/src/constants/roles.js`.
 ## Conventions backend (`api/`)
 
 - ESM (`"type": "module"`).
+- Export : `createApiRouter()` dans `src/app.js` — monté par `Server.js` sur `/api`.
+- Pas d’écoute HTTP ni de fichiers statiques dans `api/`.
 - Routes dans `src/routes/`, logique métier dans `src/services/`, schéma dans `src/db/schema.sql`.
 - Après changement de schéma : adapter `migrate.js` / `seed.js` si besoin.
 - Réponses JSON ; erreurs via `errorHandler`.
 - Données toujours scopées à la **ruche** de l’utilisateur connecté.
-- Ne pas committer `api/data/*.db` ni secrets (`.env`).
+- Ne pas committer `api/data/*.db` ni `settings.private.json`.
+- Pas de fichiers `.env` : toute la config passe par `settings*.json`.
 
 ## Fichiers sensibles à ne pas casser
 

@@ -1,0 +1,22 @@
+{
+  "name": "ams",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Espace mouvement citoyen — serveur unique (frontend + API)",
+  "type": "module",
+  "main": "Server.js",
+  "scripts": {
+    "start": "node Server.js",
+    "dev": "node --watch Server.js",
+    "postinstall": "npm install --prefix api",
+    "db:migrate": "npm run db:migrate --prefix api",
+    "db:seed": "npm run db:seed --prefix api"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

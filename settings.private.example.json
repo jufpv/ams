@@ -1,0 +1,5 @@
+{
+  "api": {
+    "jwtSecret": "change-me-in-production"
+  }
+}

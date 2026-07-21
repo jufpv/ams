@@ -1,19 +1,24 @@
 # AMS API
 
-API Node.js + Express + SQLite pour l'espace mouvement citoyen.
+API Express + SQLite pour l'espace mouvement citoyen.
 
-Le serveur expose aussi le frontend (`../app`) sur le même port.
+Montée par le serveur hôte (`../Server.js`) sur le préfixe **`/api`**.  
+Ce dossier ne gère ni l’écoute HTTP ni le frontend.
 
-## Démarrage
+## Développement
+
+Préférer le point d’entrée racine :
 
 ```bash
-cd api
+# depuis la racine du dépôt
 npm install
-cp .env.example .env
+cp settings.private.example.json settings.private.json
 npm run db:migrate
 npm run db:seed
-npm run dev
+npm start
 ```
+
+Config : `../settings.json` + `../settings.private.json` (voir `../settings.js`).
 
 Application : `http://127.0.0.1:3001`  
 Login : `http://127.0.0.1:3001/login.html`
@@ -66,13 +71,13 @@ Seul le rôle Reine peut gérer la configuration des outils.
 api/
 ├── data/           # Fichier SQLite (gitignored)
 ├── src/
-│   ├── index.js
-│   ├── app.js
+│   ├── app.js      # createApiRouter()
 │   ├── config.js
 │   ├── db/
 │   ├── routes/
 │   ├── services/
 │   └── middleware/
-├── .env.example
 └── package.json
 ```
+
+Export principal : `createApiRouter()` depuis `src/app.js`.
