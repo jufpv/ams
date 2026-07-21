@@ -1,0 +1,29 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy via SSH password
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run production update script on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_SSH_HOST }}
+          port: ${{ secrets.PROD_SSH_PORT }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          password: ${{ secrets.PROD_SSH_PASSWORD }}
+          script_stop: true
+          command_timeout: 20m
+          script: |
+            cd /var/www/atelierbymorgane.fr
+            bash update.sh --remote https://github.com/jufpv/ams.git --branch main
