@@ -33,14 +33,30 @@ const MIME_BY_EXT = Object.freeze({
 });
 
 export function uploadsRoot() {
-  return path.resolve(
-    config.projectRoot,
-    config.uploadsDir || "uploads"
-  );
+  return path.resolve(config.projectRoot, config.uploadsDir || "uploads");
+}
+
+/** Dossier temporaire d’upload — toujours sous `uploads/` du projet (pas /tmp système). */
+export function uploadsTmpDir() {
+  const dir = path.join(uploadsRoot(), ".tmp");
+  ensureDir(dir);
+  return dir;
 }
 
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
+}
+
+/** Déplace un fichier même si source et destination sont sur des volumes différents (EXDEV en prod). */
+function moveUploadedFile(sourcePath, destPath) {
+  try {
+    fs.renameSync(sourcePath, destPath);
+    return;
+  } catch (err) {
+    if (err?.code !== "EXDEV") throw err;
+  }
+  fs.copyFileSync(sourcePath, destPath);
+  fs.unlinkSync(sourcePath);
 }
 
 function extensionOf(filename) {
@@ -178,7 +194,7 @@ export function createPieceJointe(rucheId, idOrCode, entreeId, user, file) {
 
   const sourcePath = file.path || file.filepath;
   if (sourcePath) {
-    fs.renameSync(sourcePath, dest);
+    moveUploadedFile(sourcePath, dest);
   } else if (file.buffer) {
     fs.writeFileSync(dest, file.buffer);
   } else {

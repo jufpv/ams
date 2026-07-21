@@ -1,6 +1,5 @@
 import { Router } from "express";
 import multer from "multer";
-import os from "node:os";
 import path from "node:path";
 import { requireAuth, requireRoles } from "../middleware/auth.js";
 import { ROLES } from "../constants/roles.js";
@@ -27,13 +26,14 @@ import {
   getPieceJointeFile,
   listPiecesJointesForRuche,
   MAX_FILE_SIZE,
+  uploadsTmpDir,
 } from "../services/piecesJointes.js";
 
 const router = Router();
 const requireReine = requireRoles(ROLES.REINE);
 
 const upload = multer({
-  dest: path.join(os.tmpdir(), "ams-uploads"),
+  dest: uploadsTmpDir(),
   limits: { fileSize: MAX_FILE_SIZE, files: 1 },
   fileFilter(_req, file, cb) {
     const ext = path.extname(file.originalname || "").toLowerCase();
