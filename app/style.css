@@ -113,13 +113,13 @@ a {
 .logo-mark {
   width: 40px;
   height: 40px;
-  border: 1.4px solid currentColor;
-  border-radius: 50%;
-  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
   display: grid;
   place-items: center;
-  background: #fff;
-  padding: 4px;
+  background: transparent;
+  padding: 0;
   box-sizing: border-box;
 }
 
@@ -280,6 +280,24 @@ a {
   transform: translateX(0);
 }
 
+.drawer-right .drawer-panel {
+  left: auto;
+  right: 0;
+  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.08);
+  transform: translateX(105%);
+}
+
+.drawer-right.open .drawer-panel {
+  transform: translateX(0);
+}
+
+.drawer-empty {
+  margin: 1.5rem 0.4rem 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
 .drawer-header {
   display: flex;
   align-items: center;
@@ -414,15 +432,15 @@ a {
 }
 
 .auth-brand .logo {
-  width: 52px;
-  height: 52px;
+  width: 104px;
+  height: 104px;
   margin: 0 auto 1rem;
   color: var(--text);
 }
 
 .auth-brand .logo-mark {
-  width: 52px;
-  height: 52px;
+  width: 104px;
+  height: 104px;
 }
 
 .auth-brand h1 {

@@ -85,6 +85,21 @@
     </nav>
   </aside>
 
+  <aside class="drawer drawer-right" id="notifDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" data-close-notif-drawer></div>
+    <div class="drawer-panel" role="dialog" aria-label="Notifications">
+      <div class="drawer-header">
+        <strong>Notifications</strong>
+        <button class="icon-btn" type="button" aria-label="Fermer" data-close-notif-drawer>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+      </div>
+      <p class="drawer-empty">Aucune notification pour le moment.</p>
+    </div>
+  </aside>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script type="module" src="outil.js"></script>

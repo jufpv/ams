@@ -58,7 +58,7 @@ Constante source de vérité : `api/src/constants/roles.js`.
 
 - Pages HTML séparées + un JS module par page (`app.js`, `login.js`, `parametres.js`, `outil.js`, `profil.js`).
 - Auth / fetch centralisés dans `auth.js` (`api()`, session `localStorage`).
-- Styles dans `style.css` (police Manrope, identité abeille / `abeille.jpg`).
+- Styles dans `style.css` (police Manrope, identité abeille / `abeille.png`).
 - Icônes outils : chemins relatifs type `icons/*.svg`.
 - UI en **français**.
 - Pas de React / Vue / bundler sauf demande explicite.

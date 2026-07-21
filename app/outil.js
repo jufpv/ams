@@ -11,6 +11,7 @@ const bodyEl = document.getElementById("entreesBody");
 const emptyEl = document.getElementById("entreesEmpty");
 const searchInput = document.getElementById("searchInput");
 const drawer = document.getElementById("drawer");
+const notifDrawer = document.getElementById("notifDrawer");
 const toast = document.getElementById("toast");
 
 const params = new URLSearchParams(window.location.search);
@@ -104,16 +105,38 @@ async function loadEntrees(q = "") {
   renderEntrees(allEntrees);
 }
 
+function syncBodyScroll() {
+  const anyOpen =
+    drawer?.classList.contains("open") ||
+    notifDrawer?.classList.contains("open");
+  document.body.style.overflow = anyOpen ? "hidden" : "";
+}
+
 function openDrawer() {
+  closeNotifDrawer();
   drawer.classList.add("open");
   drawer.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
+  syncBodyScroll();
 }
 
 function closeDrawer() {
   drawer.classList.remove("open");
   drawer.setAttribute("aria-hidden", "true");
-  document.body.style.overflow = "";
+  syncBodyScroll();
+}
+
+function openNotifDrawer() {
+  closeDrawer();
+  notifDrawer.classList.add("open");
+  notifDrawer.setAttribute("aria-hidden", "false");
+  syncBodyScroll();
+}
+
+function closeNotifDrawer() {
+  if (!notifDrawer) return;
+  notifDrawer.classList.remove("open");
+  notifDrawer.setAttribute("aria-hidden", "true");
+  syncBodyScroll();
 }
 
 function bindChrome() {
@@ -121,17 +144,23 @@ function bindChrome() {
   drawer.querySelectorAll("[data-close-drawer]").forEach((el) => {
     el.addEventListener("click", closeDrawer);
   });
+  notifDrawer?.querySelectorAll("[data-close-notif-drawer]").forEach((el) => {
+    el.addEventListener("click", closeNotifDrawer);
+  });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && drawer.classList.contains("open")) {
+    if (event.key !== "Escape") return;
+    if (notifDrawer?.classList.contains("open")) {
+      closeNotifDrawer();
+      return;
+    }
+    if (drawer.classList.contains("open")) {
       closeDrawer();
     }
   });
   document.getElementById("profileBtn")?.addEventListener("click", () => {
     window.location.href = "./profil.html";
   });
-  document.getElementById("notifBtn")?.addEventListener("click", () => {
-    showToast("Aucune nouvelle notification");
-  });
+  document.getElementById("notifBtn")?.addEventListener("click", openNotifDrawer);
   document.getElementById("logoutLink")?.addEventListener("click", (event) => {
     event.preventDefault();
     logout();
