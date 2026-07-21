@@ -25,5 +25,5 @@ jobs:
           script_stop: true
           command_timeout: 20m
           script: |
-            cd /var/www/atelierbymorgane.fr
+            cd /var/www/ams.dynatech.app/
             bash update.sh --remote https://github.com/jufpv/ams.git --branch main
