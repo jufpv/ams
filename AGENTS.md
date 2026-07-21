@@ -23,13 +23,15 @@ npm start
 
 - **`Server.js`** : serveur HTTP (static `app/` + montage API)
 - **`settings.json` / `settings.private.json`** : configuration (plus de fichiers `.env`)
+- **`settings.prod.example.json`** : modèle prod (port **3102**, derrière nginx)
 - **`api/`** : API uniquement (routes, services, middleware, SQLite)
+- SQLite : rester sur **`better-sqlite3@^12`** (Node 20) — ne pas remonter en v13 sans Node ≥ 22
 
-Prod : `pm2 start ecosystem.config.cjs`.
+Prod : `pm2 start ecosystem.config.cjs` (ou `./update.sh`). Frontend → **`/api`** (même origine / reverse proxy).
 
-URL : `http://127.0.0.1:3001`
+URL locale : `http://127.0.0.1:3001`
 
-Comptes seed :
+Comptes seed (smoke test login) :
 
 - Maçonne : `abeille@ruches.org` / `abeille`
 - Reine : `reine@ruches.org` / `reine`
@@ -59,6 +61,7 @@ Constante source de vérité : `api/src/constants/roles.js`.
 
 - Pages HTML séparées + un JS module par page (`app.js`, `login.js`, `parametres.js`, `outil.js`, `profil.js`).
 - Auth / fetch centralisés dans `auth.js` (`api()`, session `localStorage`).
+- En HTTP/HTTPS : `API_BASE` = `/api` (même origine). Override : `window.AMS_API_BASE`. Fallback localhost uniquement en `file://`.
 - Styles dans `style.css` (police Manrope, identité abeille / `abeille.png`).
 - Icônes outils : chemins relatifs type `icons/*.svg`.
 - UI en **français**.

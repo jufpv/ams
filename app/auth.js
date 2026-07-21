@@ -3,7 +3,9 @@ const USER_KEY = "ams_user";
 
 export const API_BASE =
   window.AMS_API_BASE ||
-  (window.location.port === "3001" ? "/api" : "http://127.0.0.1:3001/api");
+  (window.location.protocol === "file:"
+    ? "http://127.0.0.1:3001/api"
+    : "/api");
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY);

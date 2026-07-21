@@ -1,0 +1,25 @@
+{
+  "env": "production",
+  "server": {
+    "host": "127.0.0.1",
+    "port": 3102,
+    "appDir": "app",
+    "uploadsDir": "uploads"
+  },
+  "api": {
+    "basePath": "/api",
+    "corsOrigin": "*",
+    "dbPath": "api/data/ams.db",
+    "jwtExpiresIn": "7d"
+  },
+  "routes": {
+    "root": "/",
+    "auth": "/auth",
+    "roles": "/roles",
+    "ruches": "/ruches",
+    "outils": "/outils",
+    "adherents": "/adherents",
+    "evenements": "/evenements",
+    "membres": "/membres"
+  }
+}
