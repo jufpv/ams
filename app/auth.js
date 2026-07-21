@@ -4,7 +4,7 @@ const USER_KEY = "ams_user";
 export const API_BASE =
   window.AMS_API_BASE ||
   (window.location.protocol === "file:"
-    ? "http://127.0.0.1:3001/api"
+    ? "http://127.0.0.1:3102/api"
     : "/api");
 
 export function getToken() {

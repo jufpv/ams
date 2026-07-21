@@ -14,7 +14,7 @@ import { config as apiConfig } from "./api/src/config.js";
 import { getDb, closeDb } from "./api/src/db/index.js";
 
 const host = settings.server?.host || "127.0.0.1";
-const port = Number(settings.server?.port) || 3001;
+const port = Number(settings.server?.port) || 3102;
 const appDir = path.resolve(projectRoot, settings.server?.appDir || "app");
 const apiBasePath = apiConfig.basePath || "/api";
 

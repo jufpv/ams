@@ -20,8 +20,8 @@ npm start
 
 Config : `../settings.json` + `../settings.private.json` (voir `../settings.js`).
 
-Application : `http://127.0.0.1:3001`  
-Login : `http://127.0.0.1:3001/login.html`
+Application : `http://127.0.0.1:3102`  
+Login : `http://127.0.0.1:3102/login.html`
 
 ### Compte de test
 

@@ -7,7 +7,7 @@ Contexte et conventions pour travailler sur le dépôt **AMS** (espace mouvement
 Monorepo léger :
 
 - `app/` — frontend HTML/CSS/JS (pas de bundler, modules ES natifs)
-- `api/` — Express + SQLite, sert aussi `app/` en statique sur le port **3001**
+- `api/` — Express + SQLite, sert aussi `app/` en statique sur le port **3102**
 
 Toujours privilégier la cohérence avec le code existant plutôt qu’introduire un nouveau framework ou une nouvelle stack.
 
@@ -23,13 +23,12 @@ npm start
 
 - **`Server.js`** : serveur HTTP (static `app/` + montage API)
 - **`settings.json` / `settings.private.json`** : configuration (plus de fichiers `.env`)
-- **`settings.prod.example.json`** : modèle prod (port **3102**, derrière nginx)
 - **`api/`** : API uniquement (routes, services, middleware, SQLite)
 - SQLite : rester sur **`better-sqlite3@^12`** (Node 20) — ne pas remonter en v13 sans Node ≥ 22
 
 Prod : `pm2 start ecosystem.config.cjs` (ou `./update.sh`). Frontend → **`/api`** (même origine / reverse proxy).
 
-URL locale : `http://127.0.0.1:3001`
+URL locale : `http://127.0.0.1:3102`
 
 Comptes seed (smoke test login) :
 
