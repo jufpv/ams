@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon profil — Espace mouvement citoyen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page page-profile" hidden>
+    <header class="topbar">
+      <div class="topbar-left">
+        <a class="icon-btn" href="./index.html" aria-label="Retour à l'accueil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </a>
+      </div>
+
+      <a class="logo" href="./index.html" aria-label="Accueil">
+        <span class="logo-mark">
+          <img src="abeille.jpg" alt="" width="40" height="40" />
+        </span>
+      </a>
+
+      <div class="topbar-actions"></div>
+    </header>
+
+    <main class="profile-main">
+      <section class="profile-hero">
+        <h1>Mon profil</h1>
+        <p id="profileMeta">Gérez vos informations personnelles</p>
+      </section>
+
+      <form class="profile-card" id="profileForm" novalidate>
+        <div class="profile-grid">
+          <label class="field">
+            <span>Prénom</span>
+            <input type="text" name="prenom" id="prenom" autocomplete="given-name" />
+          </label>
+
+          <label class="field">
+            <span>Nom</span>
+            <input type="text" name="nom" id="nom" autocomplete="family-name" />
+          </label>
+
+          <label class="field field-full">
+            <span>Email</span>
+            <input type="email" name="email" id="email" autocomplete="email" required />
+          </label>
+
+          <label class="field field-full">
+            <span>Nouveau mot de passe</span>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              autocomplete="new-password"
+              placeholder="Laisser vide pour ne pas changer"
+            />
+          </label>
+        </div>
+
+        <div class="profile-readonly">
+          <div>
+            <span class="profile-label">Rôle</span>
+            <strong id="profileRole">—</strong>
+          </div>
+          <div>
+            <span class="profile-label">Ruche</span>
+            <strong id="profileRuche">—</strong>
+          </div>
+        </div>
+
+        <p class="auth-error" id="profileError" hidden></p>
+        <p class="auth-success" id="profileSuccess" hidden></p>
+
+        <div class="profile-actions">
+          <button class="auth-submit profile-save" type="submit" id="profileSave">
+            Enregistrer
+          </button>
+          <button class="btn-secondary" type="button" id="logoutBtn">
+            Se déconnecter
+          </button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="profil.js"></script>
+</body>
+</html>

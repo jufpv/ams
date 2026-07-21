@@ -1,0 +1,11 @@
+# OS / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# API
+api/node_modules/
+api/data/*.db
+api/data/*.db-*
+api/.env

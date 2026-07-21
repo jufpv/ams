@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connexion — Espace mouvement citoyen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <div class="auth-brand">
+      <div class="logo" aria-hidden="true">
+        <span class="logo-mark">
+          <img src="abeille.jpg" alt="" width="52" height="52" />
+        </span>
+      </div>
+      <h1>Connexion</h1>
+      <p>Accédez à votre espace mouvement citoyen</p>
+    </div>
+
+    <form class="auth-form" id="loginForm" novalidate>
+      <label class="field">
+        <span>Email</span>
+        <input
+          type="email"
+          name="email"
+          id="email"
+          autocomplete="username"
+          required
+          placeholder="vous@exemple.org"
+        />
+      </label>
+
+      <label class="field">
+        <span>Mot de passe</span>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          autocomplete="current-password"
+          required
+          placeholder="••••••••"
+        />
+      </label>
+
+      <p class="auth-error" id="loginError" hidden></p>
+
+      <button class="auth-submit" type="submit" id="loginSubmit">
+        Se connecter
+      </button>
+    </form>
+  </main>
+
+  <script type="module" src="login.js"></script>
+</body>
+</html>

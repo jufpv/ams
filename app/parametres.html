@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paramètres — Espace mouvement citoyen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page page-settings" hidden>
+    <header class="topbar">
+      <div class="topbar-left">
+        <a class="icon-btn" href="./index.html" aria-label="Retour à l'accueil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </a>
+      </div>
+
+      <a class="logo" href="./index.html" aria-label="Accueil">
+        <span class="logo-mark">
+          <img src="abeille.jpg" alt="" width="40" height="40" />
+        </span>
+      </a>
+
+      <div class="topbar-actions"></div>
+    </header>
+
+    <main class="settings-main settings-main-wide">
+      <section class="settings-hero">
+        <h1>Paramètres</h1>
+        <p>Configurez votre espace</p>
+      </section>
+
+      <section class="settings-section" aria-labelledby="outils-title">
+        <div class="settings-section-header">
+          <h2 id="outils-title">Outils de l'espace de travail</h2>
+          <p>Désignation, description et icône affichés sur l'accueil</p>
+        </div>
+
+        <form id="outilsForm" class="outils-form" novalidate>
+          <div id="outilsList" class="outils-list"></div>
+          <p class="auth-error" id="outilsError" hidden></p>
+          <p class="auth-success" id="outilsSuccess" hidden></p>
+          <button class="btn-secondary btn-add-outil" type="button" id="addOutilBtn">
+            Ajouter un outil
+          </button>
+          <button class="auth-submit" type="submit" id="outilsSave">
+            Enregistrer les outils
+          </button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="parametres.js"></script>
+</body>
+</html>
