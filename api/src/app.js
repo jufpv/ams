@@ -8,6 +8,7 @@ import ruchesRouter from "./routes/ruches.js";
 import outilsRouter from "./routes/outils.js";
 import adherentsRouter from "./routes/adherents.js";
 import evenementsRouter from "./routes/evenements.js";
+import membresRouter from "./routes/membres.js";
 import { requireAuth } from "./middleware/auth.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 
@@ -33,6 +34,7 @@ export function createApiRouter() {
   router.use(routes.outils || "/outils", outilsRouter);
   router.use(routes.adherents || "/adherents", requireAuth, adherentsRouter);
   router.use(routes.evenements || "/evenements", requireAuth, evenementsRouter);
+  router.use(routes.membres || "/membres", membresRouter);
 
   router.use(notFoundHandler);
   router.use(errorHandler);

@@ -1,4 +1,10 @@
 import { getDb } from "../db/index.js";
+import {
+  DEFAULT_OUTIL_TYPE,
+  OUTIL_TYPE_LABELS,
+  OUTIL_TYPES,
+  normalizeOutilType,
+} from "../constants/outils.js";
 
 export const DEFAULT_OUTILS = [
   {
@@ -6,6 +12,7 @@ export const DEFAULT_OUTILS = [
     designation: "Adhérents",
     description: "Gérez vos adhérents et sympathisants",
     icone: "icons/adherents.svg",
+    type: OUTIL_TYPES.LISTE_ENTREES,
     ordre: 1,
   },
   {
@@ -13,6 +20,7 @@ export const DEFAULT_OUTILS = [
     designation: "Événements",
     description: "Organisez et suivez vos événements",
     icone: "icons/evenements.svg",
+    type: OUTIL_TYPES.LISTE_ENTREES,
     ordre: 2,
   },
   {
@@ -20,6 +28,7 @@ export const DEFAULT_OUTILS = [
     designation: "Communication",
     description: "Diffusez vos messages et actualités",
     icone: "icons/communication.svg",
+    type: OUTIL_TYPES.LISTE_ENTREES,
     ordre: 3,
   },
   {
@@ -27,13 +36,15 @@ export const DEFAULT_OUTILS = [
     designation: "Parrainages",
     description: "Suivez vos parrainages et signatures",
     icone: "icons/parrainages.svg",
+    type: OUTIL_TYPES.LISTE_ENTREES,
     ordre: 4,
   },
   {
     code: "campagnes",
     designation: "Campagnes",
     description: "Créez et gérez vos campagnes",
-    icone: "icons/campagnes.svg",
+    icone: "icons/action.svg",
+    type: OUTIL_TYPES.LISTE_ENTREES,
     ordre: 5,
   },
   {
@@ -41,39 +52,59 @@ export const DEFAULT_OUTILS = [
     designation: "Finances",
     description: "Suivez vos dons et dépenses",
     icone: "icons/finances.svg",
+    type: OUTIL_TYPES.LISTE_ENTREES,
     ordre: 6,
   },
+  {
+    code: "membre",
+    designation: "Membre",
+    description: "Utilisateurs de l'espace de travail",
+    icone: "icons/membre.svg",
+    type: OUTIL_TYPES.MEMBRES,
+    ordre: 7,
+  },
 ];
+
+const OUTIL_SELECT = `
+  SELECT id, ruche_id, code, designation, description, icone, type, ordre, created_at, updated_at
+  FROM outils
+`;
+
+function mapOutil(row) {
+  if (!row) return null;
+  const type = normalizeOutilType(row.type);
+  return {
+    ...row,
+    type,
+    type_label: OUTIL_TYPE_LABELS[type] || type,
+  };
+}
 
 export function listOutilsByRuche(rucheId) {
   return getDb()
     .prepare(
-      `SELECT id, ruche_id, code, designation, description, icone, ordre, created_at, updated_at
-       FROM outils
+      `${OUTIL_SELECT}
        WHERE ruche_id = ?
        ORDER BY ordre ASC, id ASC`
     )
-    .all(rucheId);
+    .all(rucheId)
+    .map(mapOutil);
 }
 
 export function findOutilById(id) {
-  return getDb()
-    .prepare(
-      `SELECT id, ruche_id, code, designation, description, icone, ordre, created_at, updated_at
-       FROM outils
-       WHERE id = ?`
-    )
-    .get(id);
+  return mapOutil(
+    getDb()
+      .prepare(`${OUTIL_SELECT} WHERE id = ?`)
+      .get(id)
+  );
 }
 
 export function findOutilByCode(rucheId, code) {
-  return getDb()
-    .prepare(
-      `SELECT id, ruche_id, code, designation, description, icone, ordre, created_at, updated_at
-       FROM outils
-       WHERE ruche_id = ? AND code = ?`
-    )
-    .get(rucheId, code);
+  return mapOutil(
+    getDb()
+      .prepare(`${OUTIL_SELECT} WHERE ruche_id = ? AND code = ?`)
+      .get(rucheId, code)
+  );
 }
 
 export function findOutilForRuche(rucheId, idOrCode) {
@@ -87,16 +118,39 @@ export function findOutilForRuche(rucheId, idOrCode) {
 
 export function ensureOutilsForRuche(rucheId) {
   const existing = listOutilsByRuche(rucheId);
-  if (existing.length > 0) return existing;
+
+  // Ne recrée pas les outils absents : une suppression depuis les réglages doit rester effective.
+  if (existing.length > 0) {
+    const membre = existing.find((outil) => outil.code === "membre");
+    if (membre && membre.type !== OUTIL_TYPES.MEMBRES) {
+      getDb()
+        .prepare(
+          `UPDATE outils
+           SET type = ?, updated_at = datetime('now')
+           WHERE id = ? AND ruche_id = ?`
+        )
+        .run(OUTIL_TYPES.MEMBRES, membre.id, rucheId);
+      return listOutilsByRuche(rucheId);
+    }
+    return existing;
+  }
 
   const insert = getDb().prepare(`
-    INSERT INTO outils (ruche_id, code, designation, description, icone, ordre)
-    VALUES (@ruche_id, @code, @designation, @description, @icone, @ordre)
+    INSERT INTO outils (ruche_id, code, designation, description, icone, type, ordre)
+    VALUES (@ruche_id, @code, @designation, @description, @icone, @type, @ordre)
   `);
 
   const seed = getDb().transaction(() => {
     for (const outil of DEFAULT_OUTILS) {
-      insert.run({ ruche_id: rucheId, ...outil });
+      insert.run({
+        ruche_id: rucheId,
+        code: outil.code,
+        designation: outil.designation,
+        description: outil.description,
+        icone: outil.icone,
+        type: outil.type || DEFAULT_OUTIL_TYPE,
+        ordre: outil.ordre,
+      });
     }
   });
 
@@ -131,7 +185,14 @@ function uniqueCode(rucheId, desired) {
 
 export function createOutil(
   rucheId,
-  { designation, description = "", icone = "", code = null, ordre = null }
+  {
+    designation,
+    description = "",
+    icone = "",
+    code = null,
+    type = DEFAULT_OUTIL_TYPE,
+    ordre = null,
+  }
 ) {
   const nextDesignation = String(designation || "").trim();
   if (!nextDesignation) {
@@ -143,6 +204,7 @@ export function createOutil(
   const nextDescription = String(description || "").trim();
   const nextIcone = String(icone || "").trim();
   const nextCode = uniqueCode(rucheId, code || nextDesignation);
+  const nextType = normalizeOutilType(type);
 
   const maxOrdre = getDb()
     .prepare("SELECT COALESCE(MAX(ordre), 0) AS max FROM outils WHERE ruche_id = ?")
@@ -155,8 +217,8 @@ export function createOutil(
 
   const result = getDb()
     .prepare(
-      `INSERT INTO outils (ruche_id, code, designation, description, icone, ordre)
-       VALUES (@ruche_id, @code, @designation, @description, @icone, @ordre)`
+      `INSERT INTO outils (ruche_id, code, designation, description, icone, type, ordre)
+       VALUES (@ruche_id, @code, @designation, @description, @icone, @type, @ordre)`
     )
     .run({
       ruche_id: rucheId,
@@ -164,6 +226,7 @@ export function createOutil(
       designation: nextDesignation,
       description: nextDescription,
       icone: nextIcone,
+      type: nextType,
       ordre: nextOrdre,
     });
 
@@ -185,7 +248,11 @@ export function deleteOutil(id, rucheId) {
   return current;
 }
 
-export function updateOutil(id, rucheId, { designation, description, icone, ordre }) {
+export function updateOutil(
+  id,
+  rucheId,
+  { designation, description, icone, type, ordre }
+) {
   const current = findOutilById(id);
   if (!current || current.ruche_id !== rucheId) {
     const err = new Error("Outil introuvable.");
@@ -198,6 +265,8 @@ export function updateOutil(id, rucheId, { designation, description, icone, ordr
   const nextDescription =
     description != null ? String(description).trim() : current.description;
   const nextIcone = icone != null ? String(icone).trim() : current.icone;
+  const nextType =
+    type != null ? normalizeOutilType(type, current.type) : current.type;
   const nextOrdre =
     ordre != null && Number.isFinite(Number(ordre))
       ? Number(ordre)
@@ -215,6 +284,7 @@ export function updateOutil(id, rucheId, { designation, description, icone, ordr
        SET designation = @designation,
            description = @description,
            icone = @icone,
+           type = @type,
            ordre = @ordre,
            updated_at = datetime('now')
        WHERE id = @id AND ruche_id = @ruche_id`
@@ -225,8 +295,20 @@ export function updateOutil(id, rucheId, { designation, description, icone, ordr
       designation: nextDesignation,
       description: nextDescription,
       icone: nextIcone,
+      type: nextType,
       ordre: nextOrdre,
     });
 
   return findOutilById(id);
+}
+
+export function assertOutilListeEntrees(outil) {
+  if (!outil) return;
+  if (normalizeOutilType(outil.type) === OUTIL_TYPES.MEMBRES) {
+    const err = new Error(
+      "Cet outil est de type Membres et n'utilise pas les entrées."
+    );
+    err.status = 400;
+    throw err;
+  }
 }

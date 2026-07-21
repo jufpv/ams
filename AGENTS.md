@@ -52,6 +52,7 @@ Constante source de vérité : `api/src/constants/roles.js`.
 - **Seul le rôle Reine** peut créer / modifier / supprimer des outils (API + UI).
 - Middleware : `requireReine` / `canManageOutils` côté API.
 - UI paramètres (`app/parametres.js`) : champs en `readonly`, boutons **Ajouter** / **Supprimer** / **Enregistrer** **visibles mais `disabled` et grisés** si non-Reine (ne pas les cacher).
+- **Entrées** : tout utilisateur authentifié peut en créer ; modifier / supprimer = `canManageEntree` (Reine ou `created_by`).
 - Ne pas élargir les droits sans demande explicite.
 
 ## Conventions frontend (`app/`)

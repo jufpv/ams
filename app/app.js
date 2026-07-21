@@ -1,37 +1,19 @@
-import { requireAuth, logout, getStoredUser, fetchOutils } from "./auth.js";
+import { requireAuth, getStoredUser, fetchOutils } from "./auth.js";
 
-const drawer = document.getElementById("drawer");
 const notifDrawer = document.getElementById("notifDrawer");
-const menuBtn = document.getElementById("menuBtn");
 const toast = document.getElementById("toast");
 const page = document.querySelector(".page");
 const navGrid = document.getElementById("navGrid");
-const drawerTools = document.getElementById("drawerTools");
 
 let toastTimer;
 
 function syncBodyScroll() {
-  const anyOpen =
-    drawer?.classList.contains("open") ||
-    notifDrawer?.classList.contains("open");
-  document.body.style.overflow = anyOpen ? "hidden" : "";
-}
-
-function openDrawer() {
-  closeNotifDrawer();
-  drawer.classList.add("open");
-  drawer.setAttribute("aria-hidden", "false");
-  syncBodyScroll();
-}
-
-function closeDrawer() {
-  drawer.classList.remove("open");
-  drawer.setAttribute("aria-hidden", "true");
-  syncBodyScroll();
+  document.body.style.overflow = notifDrawer?.classList.contains("open")
+    ? "hidden"
+    : "";
 }
 
 function openNotifDrawer() {
-  closeDrawer();
   notifDrawer.classList.add("open");
   notifDrawer.setAttribute("aria-hidden", "false");
   syncBodyScroll();
@@ -77,15 +59,6 @@ function renderOutils(outils) {
       </a>`
     )
     .join("");
-
-  if (drawerTools) {
-    drawerTools.innerHTML = outils
-      .map(
-        (outil) =>
-          `<li><a href="./outil.html?code=${encodeURIComponent(outil.code)}">${escapeHtml(outil.designation)}</a></li>`
-      )
-      .join("");
-  }
 }
 
 function bindUi(user) {
@@ -105,24 +78,13 @@ function bindUi(user) {
     profileBtn.title = `Mon profil — ${displayName}`;
   }
 
-  menuBtn.addEventListener("click", openDrawer);
-
-  drawer.querySelectorAll("[data-close-drawer]").forEach((el) => {
-    el.addEventListener("click", closeDrawer);
-  });
-
   notifDrawer?.querySelectorAll("[data-close-notif-drawer]").forEach((el) => {
     el.addEventListener("click", closeNotifDrawer);
   });
 
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    if (notifDrawer?.classList.contains("open")) {
+    if (event.key === "Escape" && notifDrawer?.classList.contains("open")) {
       closeNotifDrawer();
-      return;
-    }
-    if (drawer.classList.contains("open")) {
-      closeDrawer();
     }
   });
 
@@ -134,15 +96,6 @@ function bindUi(user) {
 
   document.getElementById("settingsBtn")?.addEventListener("click", () => {
     window.location.href = "./parametres.html";
-  });
-
-  document.getElementById("profileLink")?.addEventListener("click", () => {
-    window.location.href = "./profil.html";
-  });
-
-  document.getElementById("logoutLink")?.addEventListener("click", (event) => {
-    event.preventDefault();
-    logout();
   });
 }
 

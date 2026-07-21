@@ -112,6 +112,33 @@ function migrate() {
   ensureColumn(db, "users", "ruche_id", "INTEGER REFERENCES ruches(id) ON DELETE SET NULL");
   ensureColumn(db, "adherents", "ruche_id", "INTEGER REFERENCES ruches(id) ON DELETE CASCADE");
   ensureColumn(db, "evenements", "ruche_id", "INTEGER REFERENCES ruches(id) ON DELETE CASCADE");
+  ensureColumn(db, "entrees", "created_by", "INTEGER REFERENCES users(id) ON DELETE SET NULL");
+  ensureColumn(db, "entrees", "type", "TEXT NOT NULL DEFAULT 'lien'");
+  ensureColumn(db, "entrees", "contenu", "TEXT NOT NULL DEFAULT ''");
+  ensureColumn(db, "outils", "type", "TEXT NOT NULL DEFAULT 'liste_entrees'");
+
+  db.exec(`
+    UPDATE outils
+    SET type = 'liste_entrees'
+    WHERE type IS NULL OR trim(type) = '' OR type NOT IN ('liste_entrees', 'membres')
+  `);
+
+  // Ajoute une seule fois l'outil Membre aux ruches qui ne l'ont pas encore.
+  const ruches = db.prepare("SELECT id FROM ruches").all();
+  const hasMembre = db.prepare(
+    "SELECT 1 AS ok FROM outils WHERE ruche_id = ? AND code = 'membre'"
+  );
+  const maxOrdre = db.prepare(
+    "SELECT COALESCE(MAX(ordre), 0) AS max FROM outils WHERE ruche_id = ?"
+  );
+  const insertMembre = db.prepare(`
+    INSERT INTO outils (ruche_id, code, designation, description, icone, type, ordre)
+    VALUES (?, 'membre', 'Membre', 'Utilisateurs de l''espace de travail', 'icons/membre.svg', 'membres', ?)
+  `);
+  for (const ruche of ruches) {
+    if (hasMembre.get(ruche.id)) continue;
+    insertMembre.run(ruche.id, Number(maxOrdre.get(ruche.id).max) + 1);
+  }
 
   migrateUsersRoles(db);
 
@@ -121,6 +148,8 @@ function migrate() {
     CREATE INDEX IF NOT EXISTS idx_evenements_ruche ON evenements(ruche_id);
     CREATE INDEX IF NOT EXISTS idx_outils_ruche ON outils(ruche_id);
     CREATE INDEX IF NOT EXISTS idx_entrees_outil ON entrees(outil_id);
+    CREATE INDEX IF NOT EXISTS idx_entrees_created_by ON entrees(created_by);
+    CREATE INDEX IF NOT EXISTS idx_pieces_jointes_entree ON pieces_jointes(entree_id);
   `);
 
   const upsert = db.prepare(`
@@ -128,7 +157,7 @@ function migrate() {
     ON CONFLICT(key) DO UPDATE SET value = excluded.value
   `);
 
-  upsert.run({ key: "schema_version", value: "7" });
+  upsert.run({ key: "schema_version", value: "12" });
   upsert.run({ key: "migrated_at", value: new Date().toISOString() });
   upsert.run({ key: "default_role", value: DEFAULT_ROLE });
 

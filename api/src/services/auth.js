@@ -210,3 +210,37 @@ export function toPublicUser(user) {
     created_at: user.created_at,
   };
 }
+
+export function listUsersByRuche(rucheId, { q = "" } = {}) {
+  const query = String(q || "").trim();
+  let rows;
+
+  if (!query) {
+    rows = getDb()
+      .prepare(
+        `SELECT id, email, prenom, nom, role, ruche_id, created_at, updated_at
+         FROM users
+         WHERE ruche_id = ?
+         ORDER BY nom COLLATE NOCASE, prenom COLLATE NOCASE, email COLLATE NOCASE`
+      )
+      .all(rucheId);
+  } else {
+    const like = `%${query}%`;
+    rows = getDb()
+      .prepare(
+        `SELECT id, email, prenom, nom, role, ruche_id, created_at, updated_at
+         FROM users
+         WHERE ruche_id = ?
+           AND (
+             prenom LIKE ? COLLATE NOCASE
+             OR nom LIKE ? COLLATE NOCASE
+             OR email LIKE ? COLLATE NOCASE
+             OR role LIKE ? COLLATE NOCASE
+           )
+         ORDER BY nom COLLATE NOCASE, prenom COLLATE NOCASE, email COLLATE NOCASE`
+      )
+      .all(rucheId, like, like, like, like);
+  }
+
+  return rows.map((row) => toPublicUser(row));
+}

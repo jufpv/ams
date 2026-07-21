@@ -19,3 +19,11 @@ export function isValidRole(role) {
 export function canManageOutils(role) {
   return OUTILS_MANAGE_ROLES.includes(role);
 }
+
+/** Reine ou créateur de l'entrée */
+export function canManageEntree(user, entree) {
+  if (!user || !entree) return false;
+  if (user.role === ROLES.REINE) return true;
+  if (entree.created_by == null) return false;
+  return Number(entree.created_by) === Number(user.id);
+}

@@ -21,6 +21,11 @@ let outils = [];
 let currentUser = null;
 let canManageOutils = false;
 
+const OUTIL_TYPES = [
+  { value: "liste_entrees", label: "Liste d'entrées" },
+  { value: "membres", label: "Membres" },
+];
+
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("show");
@@ -56,6 +61,56 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+function syncFormIntoOutils() {
+  if (!form || !outils.length) return;
+  outils = outils.map((outil) => {
+    const designationInput = form[`designation-${outil.id}`];
+    const descriptionInput = form[`description-${outil.id}`];
+    const iconeInput = form[`icone-${outil.id}`];
+    const typeSelect = form[`type-${outil.id}`];
+    return {
+      ...outil,
+      designation: designationInput
+        ? designationInput.value.trim()
+        : outil.designation,
+      description: descriptionInput
+        ? descriptionInput.value.trim()
+        : outil.description,
+      icone: iconeInput ? iconeInput.value.trim() : outil.icone,
+      type: typeSelect ? typeSelect.value : outil.type || "liste_entrees",
+    };
+  });
+}
+
+function renumberOrdre() {
+  outils = outils.map((outil, index) => ({
+    ...outil,
+    ordre: index + 1,
+  }));
+}
+
+function moveOutil(id, direction) {
+  if (!canManageOutils) return;
+
+  const index = outils.findIndex((item) => Number(item.id) === Number(id));
+  if (index < 0) return;
+
+  const target = index + direction;
+  if (target < 0 || target >= outils.length) return;
+
+  const openIds = [...listEl.querySelectorAll(".outil-card.is-open")].map((card) =>
+    Number(card.dataset.id)
+  );
+
+  syncFormIntoOutils();
+  const next = [...outils];
+  const [item] = next.splice(index, 1);
+  next.splice(target, 0, item);
+  outils = next;
+  renumberOrdre();
+  renderOutils({ openIds });
+}
+
 function bindCardEvents() {
   listEl.querySelectorAll("[data-toggle-outil]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -63,6 +118,15 @@ function bindCardEvents() {
       if (!card) return;
       const open = card.classList.toggle("is-open");
       btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+  });
+
+  listEl.querySelectorAll("[data-move-outil]").forEach((btn) => {
+    btn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const id = Number(btn.dataset.moveOutil);
+      const direction = btn.dataset.direction === "up" ? -1 : 1;
+      moveOutil(id, direction);
     });
   });
 
@@ -102,6 +166,7 @@ function bindCardEvents() {
       try {
         await deleteOutil(id);
         outils = outils.filter((item) => item.id !== id);
+        renumberOrdre();
         renderOutils();
         showSuccess("Outil supprimé.");
         showToast("Outil supprimé");
@@ -113,7 +178,7 @@ function bindCardEvents() {
   });
 }
 
-function renderOutils({ openId = null } = {}) {
+function renderOutils({ openId = null, openIds = null } = {}) {
   addBtn.hidden = false;
   addBtn.disabled = !canManageOutils;
   addBtn.title = canManageOutils ? "" : "Réservé au rôle Reine";
@@ -128,13 +193,50 @@ function renderOutils({ openId = null } = {}) {
   }
 
   const locked = !canManageOutils ? "readonly" : "";
+  const opened = new Set(
+    openIds != null
+      ? openIds.map(Number)
+      : openId != null
+        ? [Number(openId)]
+        : []
+  );
 
   listEl.innerHTML = outils
-    .map((outil) => {
-      const isOpen = openId != null && Number(openId) === Number(outil.id);
+    .map((outil, index) => {
+      const isOpen = opened.has(Number(outil.id));
+      const isFirst = index === 0;
+      const isLast = index === outils.length - 1;
       return `
       <article class="outil-card${isOpen ? " is-open" : ""}" data-id="${outil.id}">
         <div class="outil-card-head">
+          <div class="outil-order" role="group" aria-label="Ordre de ${escapeHtml(outil.designation)}">
+            <button
+              class="btn-order"
+              type="button"
+              data-move-outil="${outil.id}"
+              data-direction="up"
+              aria-label="Monter ${escapeHtml(outil.designation)}"
+              ${!canManageOutils || isFirst ? "disabled" : ""}
+              title="${canManageOutils ? "Monter" : "Réservé au rôle Reine"}"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 14l6-6 6 6" />
+              </svg>
+            </button>
+            <button
+              class="btn-order"
+              type="button"
+              data-move-outil="${outil.id}"
+              data-direction="down"
+              aria-label="Descendre ${escapeHtml(outil.designation)}"
+              ${!canManageOutils || isLast ? "disabled" : ""}
+              title="${canManageOutils ? "Descendre" : "Réservé au rôle Reine"}"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 10l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
           <button class="outil-card-toggle" type="button" data-toggle-outil aria-expanded="${isOpen ? "true" : "false"}">
             <span class="outil-preview" aria-hidden="true">
               <img src="${escapeHtml(outil.icone || "icons/adherents.svg")}" alt="" width="28" height="28" />
@@ -158,6 +260,19 @@ function renderOutils({ openId = null } = {}) {
           <label class="field">
             <span>Désignation</span>
             <input type="text" name="designation-${outil.id}" value="${escapeHtml(outil.designation)}" ${locked} required />
+          </label>
+          <label class="field">
+            <span>Type</span>
+            <select name="type-${outil.id}" ${canManageOutils ? "" : "disabled"}>
+              ${OUTIL_TYPES.map(
+                (option) =>
+                  `<option value="${option.value}" ${
+                    (outil.type || "liste_entrees") === option.value
+                      ? "selected"
+                      : ""
+                  }>${escapeHtml(option.label)}</option>`
+              ).join("")}
+            </select>
           </label>
           <label class="field">
             <span>Description</span>
@@ -186,6 +301,7 @@ addBtn.addEventListener("click", async () => {
       designation: "Nouvel outil",
       description: "",
       icone: "icons/adherents.svg",
+      type: "liste_entrees",
     });
     outils = [...outils, data];
     renderOutils({ openId: data.id });
@@ -214,11 +330,13 @@ form.addEventListener("submit", async (event) => {
   saveBtn.textContent = "Enregistrement…";
 
   try {
+    syncFormIntoOutils();
+    renumberOrdre();
     const updated = [];
     for (const outil of outils) {
-      const designation = form[`designation-${outil.id}`].value.trim();
-      const description = form[`description-${outil.id}`].value.trim();
-      const icone = form[`icone-${outil.id}`].value.trim();
+      const designation = outil.designation;
+      const description = outil.description;
+      const icone = outil.icone;
 
       if (!designation) {
         throw new Error(`La désignation est obligatoire pour « ${outil.code} ».`);
@@ -228,12 +346,13 @@ form.addEventListener("submit", async (event) => {
         designation,
         description,
         icone,
+        type: outil.type || "liste_entrees",
         ordre: outil.ordre,
       });
       updated.push(data);
     }
 
-    outils = updated;
+    outils = updated.sort((a, b) => a.ordre - b.ordre || a.id - b.id);
     renderOutils();
     showSuccess("Outils enregistrés.");
     showToast("Configuration mise à jour");
@@ -253,7 +372,7 @@ form.addEventListener("submit", async (event) => {
 
   try {
     const { data } = await fetchOutils();
-    outils = data || [];
+    outils = (data || []).slice().sort((a, b) => a.ordre - b.ordre || a.id - b.id);
     renderOutils();
     if (page) page.hidden = false;
   } catch (err) {

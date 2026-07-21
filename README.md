@@ -68,9 +68,10 @@ Espace de travail local (ex. `10-58-89`). Les utilisateurs, adhérents, événem
 |------|--------|
 | **Butineuse** | Rôle par défaut — consultation |
 | **Maçonne** | Consultation (compte de test) |
-| **Reine** | Seule à pouvoir ajouter, modifier et supprimer des **outils** |
+| **Reine** | Seule à pouvoir ajouter, modifier et supprimer des **outils** ; peut aussi gérer toutes les **entrées** |
 
-Côté UI, les actions non autorisées restent visibles mais désactivées / grisées.
+Tout utilisateur authentifié peut **ajouter** une entrée.  
+Modifier / supprimer une entrée : **Reine** ou **créateur** de l’entrée.
 
 ### Outils
 
@@ -117,7 +118,8 @@ ams/
 | `index.html` | Accueil, menu, cartes outils dynamiques |
 | `login.html` | Connexion |
 | `parametres.html` | CRUD outils (Reine) |
-| `outil.html` | Entrées d’un outil + recherche |
+| `outil.html` | Entrées d’un outil + recherche + bouton **+** |
+| `entree.html` | Ajouter / modifier / supprimer une entrée |
 | `profil.html` | Infos personnelles + déconnexion |
 
 La session (token JWT + user) est stockée dans `localStorage` via `app/auth.js`.
@@ -135,6 +137,8 @@ Documentation détaillée : [`api/README.md`](api/README.md).
 | GET | `/api/outils` | oui | Outils de la ruche |
 | POST / PATCH / DELETE | `/api/outils`… | oui (**Reine**) | Gestion outils |
 | GET | `/api/outils/:code/entrees` | oui | Entrées (`?q=`) |
+| POST | `/api/outils/:code/entrees` | oui | Ajouter une entrée |
+| PATCH / DELETE | `/api/outils/:code/entrees/:id` | oui (**Reine** ou **créateur**) | Modifier / supprimer |
 | GET | `/api/adherents` | oui | Adhérents |
 | GET | `/api/evenements` | oui | Événements |
 

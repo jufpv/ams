@@ -12,6 +12,7 @@ export const config = {
   routes: settings.routes || {},
   rootDir: path.join(projectRoot, "api"),
   projectRoot,
+  uploadsDir: settings.server?.uploadsDir || "uploads",
 };
 
 if (!config.jwtSecret) {

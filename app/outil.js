@@ -1,8 +1,9 @@
 import {
   requireAuth,
   getStoredUser,
+  fetchOutil,
   fetchEntrees,
-  logout,
+  fetchMembres,
 } from "./auth.js";
 
 const page = document.querySelector(".page-outil");
@@ -10,7 +11,8 @@ const titleEl = document.getElementById("outilTitle");
 const bodyEl = document.getElementById("entreesBody");
 const emptyEl = document.getElementById("entreesEmpty");
 const searchInput = document.getElementById("searchInput");
-const drawer = document.getElementById("drawer");
+const addEntreeBtn = document.getElementById("addEntreeBtn");
+const listSection = document.getElementById("outilListSection");
 const notifDrawer = document.getElementById("notifDrawer");
 const toast = document.getElementById("toast");
 
@@ -19,7 +21,10 @@ const outilCode = params.get("code");
 
 let toastTimer;
 let searchTimer;
-let allEntrees = [];
+let allItems = [];
+let currentOutil = null;
+let currentUser = null;
+let mode = "liste_entrees";
 
 function showToast(message) {
   toast.textContent = message;
@@ -37,37 +42,20 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
-function linkHref(lien) {
-  const value = String(lien || "").trim();
-  if (!value) return "#";
-  if (/^https?:\/\//i.test(value)) return value;
-  if (/^mailto:/i.test(value) || /^tel:/i.test(value)) return value;
-  return `https://${value}`;
+function entreeViewUrl(entreeId) {
+  return `./entree.html?code=${encodeURIComponent(outilCode)}&id=${encodeURIComponent(entreeId)}`;
 }
 
-function linkLabel(lien) {
-  const value = String(lien || "").trim();
-  if (!value) return "—";
-  try {
-    const url = new URL(linkHref(value));
-    const host = url.hostname.replace(/^www\./, "");
-    if (host.includes("whatsapp")) return "WhatsApp";
-    if (host.includes("drive.google") || host.includes("docs.google")) {
-      return "Google Drive";
-    }
-    if (host.includes("dropbox")) return "Dropbox";
-    if (host.includes("outlook") || host.includes("office")) return "Agenda Outlook";
-    if (value.length > 42) return `${value.slice(0, 39)}…`;
-    return value;
-  } catch {
-    return value;
-  }
+function memberDisplayName(member) {
+  const full = [member.prenom, member.nom].filter(Boolean).join(" ").trim();
+  return full || member.email || "Membre";
 }
 
 function renderEntrees(entrees) {
   if (!entrees.length) {
     bodyEl.innerHTML = "";
     emptyEl.hidden = false;
+    emptyEl.textContent = "Aucune entrée trouvée.";
     return;
   }
 
@@ -75,58 +63,130 @@ function renderEntrees(entrees) {
   bodyEl.innerHTML = entrees
     .map(
       (entree) => `
-      <div class="entrees-row" role="row">
-        <div class="entrees-cell designation" role="cell">${escapeHtml(entree.designation)}</div>
-        <div class="entrees-cell lien" role="cell">
-          <a href="${escapeHtml(linkHref(entree.lien))}" target="_blank" rel="noopener noreferrer">
-            ${escapeHtml(linkLabel(entree.lien))}
-          </a>
-        </div>
-      </div>`
+      <a class="entree-card" href="${escapeHtml(entreeViewUrl(entree.id))}">
+        <strong class="entree-card-title">${escapeHtml(entree.designation)}</strong>
+      </a>`
+    )
+    .join("");
+}
+
+function renderMembres(membres) {
+  if (!membres.length) {
+    bodyEl.innerHTML = "";
+    emptyEl.hidden = false;
+    emptyEl.textContent = "Aucun membre dans cet espace.";
+    return;
+  }
+
+  emptyEl.hidden = true;
+  bodyEl.innerHTML = membres
+    .map(
+      (member) => `
+      <article class="entree-card membre-card">
+        <strong class="entree-card-title">${escapeHtml(memberDisplayName(member))}</strong>
+        <p class="membre-card-meta">${escapeHtml(member.email || "—")}</p>
+        <p class="membre-card-role">${escapeHtml(member.role || "")}</p>
+      </article>`
     )
     .join("");
 }
 
 function filterLocal(q) {
   const query = q.trim().toLowerCase();
-  if (!query) return allEntrees;
-  return allEntrees.filter(
-    (entree) =>
-      entree.designation.toLowerCase().includes(query) ||
-      entree.lien.toLowerCase().includes(query)
+  if (!query) return allItems;
+
+  if (mode === "membres") {
+    return allItems.filter((member) => {
+      const haystack = [
+        member.prenom,
+        member.nom,
+        member.email,
+        member.role,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }
+
+  return allItems.filter((entree) =>
+    entree.designation.toLowerCase().includes(query)
   );
 }
 
-async function loadEntrees(q = "") {
-  const { outil, data } = await fetchEntrees(outilCode, { q });
+function renderItems(items) {
+  if (mode === "membres") renderMembres(items);
+  else renderEntrees(items);
+}
+
+function setAddButtonEnabled(enabled, { href = "#", label = "Ajouter une entrée" } = {}) {
+  addEntreeBtn.hidden = false;
+  addEntreeBtn.setAttribute("aria-label", label);
+  if (enabled) {
+    addEntreeBtn.href = href;
+    addEntreeBtn.removeAttribute("aria-disabled");
+    addEntreeBtn.classList.remove("is-disabled");
+    addEntreeBtn.title = "";
+    return;
+  }
+
+  addEntreeBtn.href = "#";
+  addEntreeBtn.setAttribute("aria-disabled", "true");
+  addEntreeBtn.classList.add("is-disabled");
+  addEntreeBtn.title = "Réservé au rôle Reine";
+}
+
+function applyOutilChrome(outil) {
+  currentOutil = outil;
+  mode = outil.type === "membres" ? "membres" : "liste_entrees";
   titleEl.textContent = outil.designation;
   document.title = `${outil.designation} — Espace mouvement citoyen`;
-  allEntrees = data || [];
-  renderEntrees(allEntrees);
+
+  if (mode === "membres") {
+    const canAdd = currentUser?.role === "Reine";
+    setAddButtonEnabled(canAdd, {
+      href: "#",
+      label: "Ajouter un membre",
+    });
+    searchInput.placeholder = "Rechercher un membre…";
+    if (listSection) {
+      listSection.setAttribute("aria-label", "Liste des membres");
+    }
+  } else {
+    setAddButtonEnabled(true, {
+      href: `./entree.html?code=${encodeURIComponent(outilCode)}`,
+      label: "Ajouter une entrée",
+    });
+    searchInput.placeholder = "Rechercher...";
+    if (listSection) {
+      listSection.setAttribute("aria-label", "Liste des entrées");
+    }
+  }
+}
+
+async function loadContent() {
+  const { data: outil } = await fetchOutil(outilCode);
+  applyOutilChrome(outil);
+
+  if (mode === "membres") {
+    const { data } = await fetchMembres();
+    allItems = data || [];
+  } else {
+    const { data } = await fetchEntrees(outilCode);
+    allItems = data || [];
+  }
+
+  renderItems(allItems);
 }
 
 function syncBodyScroll() {
-  const anyOpen =
-    drawer?.classList.contains("open") ||
-    notifDrawer?.classList.contains("open");
-  document.body.style.overflow = anyOpen ? "hidden" : "";
-}
-
-function openDrawer() {
-  closeNotifDrawer();
-  drawer.classList.add("open");
-  drawer.setAttribute("aria-hidden", "false");
-  syncBodyScroll();
-}
-
-function closeDrawer() {
-  drawer.classList.remove("open");
-  drawer.setAttribute("aria-hidden", "true");
-  syncBodyScroll();
+  document.body.style.overflow = notifDrawer?.classList.contains("open")
+    ? "hidden"
+    : "";
 }
 
 function openNotifDrawer() {
-  closeDrawer();
   notifDrawer.classList.add("open");
   notifDrawer.setAttribute("aria-hidden", "false");
   syncBodyScroll();
@@ -140,36 +200,26 @@ function closeNotifDrawer() {
 }
 
 function bindChrome() {
-  document.getElementById("menuBtn")?.addEventListener("click", openDrawer);
-  drawer.querySelectorAll("[data-close-drawer]").forEach((el) => {
-    el.addEventListener("click", closeDrawer);
-  });
   notifDrawer?.querySelectorAll("[data-close-notif-drawer]").forEach((el) => {
     el.addEventListener("click", closeNotifDrawer);
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    if (notifDrawer?.classList.contains("open")) {
+    if (event.key === "Escape" && notifDrawer?.classList.contains("open")) {
       closeNotifDrawer();
-      return;
     }
-    if (drawer.classList.contains("open")) {
-      closeDrawer();
-    }
-  });
-  document.getElementById("profileBtn")?.addEventListener("click", () => {
-    window.location.href = "./profil.html";
   });
   document.getElementById("notifBtn")?.addEventListener("click", openNotifDrawer);
-  document.getElementById("logoutLink")?.addEventListener("click", (event) => {
-    event.preventDefault();
-    logout();
+
+  addEntreeBtn?.addEventListener("click", (event) => {
+    if (addEntreeBtn.getAttribute("aria-disabled") === "true") {
+      event.preventDefault();
+    }
   });
 
   searchInput.addEventListener("input", () => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-      renderEntrees(filterLocal(searchInput.value));
+      renderItems(filterLocal(searchInput.value));
     }, 120);
   });
 }
@@ -180,19 +230,20 @@ function bindChrome() {
     return;
   }
 
-  const user = (await requireAuth()) || getStoredUser();
-  if (!user) return;
+  currentUser = (await requireAuth()) || getStoredUser();
+  if (!currentUser) return;
 
   bindChrome();
 
   try {
-    await loadEntrees();
+    await loadContent();
     if (page) page.hidden = false;
   } catch (err) {
     if (page) page.hidden = false;
     titleEl.textContent = "Outil introuvable";
     emptyEl.hidden = false;
     emptyEl.textContent = err.message || "Impossible de charger cet outil.";
+    addEntreeBtn.hidden = true;
     showToast(err.message || "Chargement impossible");
   }
 })();

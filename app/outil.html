@@ -13,13 +13,10 @@
   <div class="page page-outil" hidden>
     <header class="topbar topbar-outil">
       <div class="topbar-left">
-        <button class="icon-btn" type="button" aria-label="Menu" id="menuBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-            <path d="M4 7h16M4 12h16M4 17h16" />
+        <a class="icon-btn" href="./index.html" aria-label="Retour à l'accueil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 6l-6 6 6 6" />
           </svg>
-        </button>
-        <a class="btn-home" href="./index.html">
-          <span aria-hidden="true">←</span> Accueil
         </a>
       </div>
 
@@ -32,58 +29,32 @@
             <path d="M10 19a2 2 0 0 0 4 0" />
           </svg>
         </button>
-        <button class="icon-btn profile-btn" type="button" aria-label="Profil" id="profileBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="3.2" />
-            <path d="M5.5 19c1.4-3.2 3.8-4.8 6.5-4.8s5.1 1.6 6.5 4.8" />
-          </svg>
-        </button>
       </div>
     </header>
 
     <main class="outil-main">
-      <label class="search-bar" for="searchInput">
-        <span class="search-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="M16.5 16.5L21 21" />
-          </svg>
-        </span>
-        <input type="search" id="searchInput" placeholder="Rechercher..." autocomplete="off" />
-      </label>
+      <div class="outil-toolbar">
+        <label class="search-bar" for="searchInput">
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="M16.5 16.5L21 21" />
+            </svg>
+          </span>
+          <input type="search" id="searchInput" placeholder="Rechercher..." autocomplete="off" />
+        </label>
+        <a class="btn-add-entree" id="addEntreeBtn" href="#" aria-label="Ajouter une entrée">
+          <span class="btn-add-entree-icon" aria-hidden="true">+</span>
+          <span class="btn-add-entree-label">Ajouter</span>
+        </a>
+      </div>
 
-      <section class="entrees-panel" aria-label="Liste des entrées">
-        <div class="entrees-table" role="table" aria-label="Entrées">
-          <div class="entrees-head" role="row">
-            <div role="columnheader">Désignation</div>
-            <div role="columnheader">Lien d'accès</div>
-          </div>
-          <div id="entreesBody" class="entrees-body" role="rowgroup"></div>
-        </div>
+      <section class="entrees-list" id="outilListSection" aria-label="Liste des entrées">
+        <div id="entreesBody" class="entrees-cards"></div>
         <p class="entrees-empty" id="entreesEmpty" hidden>Aucune entrée trouvée.</p>
       </section>
     </main>
   </div>
-
-  <aside class="drawer" id="drawer" aria-hidden="true">
-    <div class="drawer-backdrop" data-close-drawer></div>
-    <nav class="drawer-panel" aria-label="Menu latéral">
-      <div class="drawer-header">
-        <strong>Menu</strong>
-        <button class="icon-btn" type="button" aria-label="Fermer" data-close-drawer>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-            <path d="M6 6l12 12M18 6L6 18" />
-          </svg>
-        </button>
-      </div>
-      <ul>
-        <li><a href="./index.html">Accueil</a></li>
-        <li><a href="./profil.html">Mon profil</a></li>
-        <li><a href="./parametres.html">Paramètres</a></li>
-        <li><a href="#" id="logoutLink">Déconnexion</a></li>
-      </ul>
-    </nav>
-  </aside>
 
   <aside class="drawer drawer-right" id="notifDrawer" aria-hidden="true">
     <div class="drawer-backdrop" data-close-notif-drawer></div>

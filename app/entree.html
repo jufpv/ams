@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entrée — Espace mouvement citoyen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page page-entree" hidden>
+    <header class="topbar">
+      <div class="topbar-left">
+        <a class="icon-btn" id="backLink" href="./index.html" aria-label="Retour à la liste">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 6l-6 6 6 6" />
+          </svg>
+        </a>
+      </div>
+
+      <a class="logo" href="./index.html" aria-label="Accueil">
+        <span class="logo-mark">
+          <img src="abeille.png" alt="" width="40" height="40" />
+        </span>
+      </a>
+
+      <div class="topbar-actions"></div>
+    </header>
+
+    <main class="entree-main">
+      <section class="entree-hero">
+        <p class="entree-outil" id="outilLabel">Outil</p>
+        <h1 id="pageTitle">Entrée</h1>
+      </section>
+
+      <section class="entree-view" id="entreeView" hidden>
+        <div class="entree-view-field">
+          <span class="entree-view-label">Désignation</span>
+          <strong id="viewDesignation">—</strong>
+        </div>
+        <div class="entree-view-field">
+          <span class="entree-view-label">Notes</span>
+          <div id="viewNotes" class="entree-view-note">—</div>
+        </div>
+        <div class="entree-view-field">
+          <span class="entree-view-label">Pièces jointes</span>
+          <div id="viewPieces" class="pieces-list"></div>
+        </div>
+        <p class="auth-error" id="viewError" hidden></p>
+        <div class="entree-form-actions" id="viewActions" hidden>
+          <button class="btn-secondary btn-row-danger" type="button" id="viewDelete">
+            Supprimer
+          </button>
+          <a class="auth-submit btn-as-link" id="viewEdit" href="#">Modifier</a>
+        </div>
+      </section>
+
+      <form class="entree-form" id="entreeForm" novalidate hidden>
+        <label class="field">
+          <span>Désignation</span>
+          <input type="text" id="entreeDesignation" required maxlength="200" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Notes</span>
+          <textarea id="entreeNotes" rows="8" maxlength="5000" placeholder="Texte, liens…"></textarea>
+        </label>
+
+        <div class="field pieces-field">
+          <span>Pièces jointes</span>
+          <p class="pieces-hint">PNG, JPG, SVG ou PDF — 10 Mo max.</p>
+          <div id="formPieces" class="pieces-list"></div>
+          <label class="pieces-upload">
+            <input type="file" id="entreeFiles" accept=".png,.jpg,.jpeg,.svg,.pdf,image/png,image/jpeg,image/svg+xml,application/pdf" multiple />
+            <span class="btn-secondary pieces-upload-btn">Ajouter des fichiers</span>
+          </label>
+        </div>
+
+        <p class="auth-error" id="entreeError" hidden></p>
+
+        <div class="entree-form-actions">
+          <a class="btn-secondary" id="entreeCancel" href="./index.html">Annuler</a>
+          <button class="auth-submit" type="submit" id="entreeSubmit">Ajouter</button>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="entree.js"></script>
+</body>
+</html>

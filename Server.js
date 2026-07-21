@@ -32,6 +32,7 @@ const server = app.listen(port, host, () => {
   console.log(`AMS → http://${host}:${port}`);
   console.log(`  API      ${apiBasePath}/*`);
   console.log(`  Frontend ${appDir}`);
+  console.log(`  Uploads  ${path.resolve(projectRoot, settings.server?.uploadsDir || "uploads")}`);
   console.log(`  SQLite   ${apiConfig.dbPath}`);
 });
 

@@ -59,6 +59,9 @@ Seul le rôle Reine peut gérer la configuration des outils.
 | GET | `/api/outils` | oui | Outils de la ruche |
 | GET | `/api/outils/:code` | oui | Détail d'un outil |
 | GET | `/api/outils/:code/entrees` | oui | Entrées d'un outil (`?q=` recherche) |
+| POST | `/api/outils/:code/entrees` | oui | Ajouter une entrée |
+| PATCH | `/api/outils/:code/entrees/:id` | oui (Reine ou créateur) | Modifier une entrée |
+| DELETE | `/api/outils/:code/entrees/:id` | oui (Reine ou créateur) | Supprimer une entrée |
 | POST | `/api/outils` | oui (Reine) | Ajouter un outil |
 | PATCH | `/api/outils/:id` | oui (Reine) | Mettre à jour un outil |
 | DELETE | `/api/outils/:id` | oui (Reine) | Supprimer un outil |
